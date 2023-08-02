@@ -6,3 +6,7 @@ Select the maximum number of characters of the password and wait for the process
 You can check the .txt file to see the progress.
 # Credits
 Made by Raider1101.
+# Versions
+V1.0a - 27/06/2023
+V1.1 - 28/06/2023
+V1.2 - 02/08/2023
