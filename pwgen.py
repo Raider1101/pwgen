@@ -1,4 +1,6 @@
 import itertools
+import os
+import time
 
 def generate_combinations(num_characters, use_letters=True, use_numbers=True, use_special_chars=True):
     characters = ""
@@ -9,12 +11,41 @@ def generate_combinations(num_characters, use_letters=True, use_numbers=True, us
     if use_special_chars:
         characters += "!@#$%&*"
 
-    with open("combinations.txt", "w") as file:
+    total_combinations = sum(len(characters) ** i for i in range(1, num_characters + 1))
+    print(f"Estimated number of combinations: {total_combinations}")
+    estimated_file_size = total_combinations * 8 / 1024  # Assuming 8 bytes per combination (approx)
+    print(f"Estimated file size: {estimated_file_size:.2f} KB")
+
+    buffer_size = 1024 * 1024  # 1 MB buffer size
+    buffer = []
+    start_time = time.time()
+    last_update_time = start_time
+    completed = 0
+
+    # Print initial progress bar
+    print(f"Progress: [{' ' * 50}] 0/{total_combinations} ETA: Calculating...", end='\r')
+
+    with open("wordlist.txt", "w") as file:
         for i in range(1, num_characters + 1):
             combinations = itertools.product(characters, repeat=i)
+            total = len(characters) ** i
             for combination in combinations:
                 line = ''.join(combination) + "\n"
-                file.write(line)
+                buffer.append(line)
+                completed += 1
+                if len(buffer) * len(line) >= buffer_size:  # Flush buffer if it exceeds the size
+                    file.writelines(buffer)
+                    buffer.clear()
+                current_time = time.time()
+                if current_time - last_update_time >= 5:  # Update progress bar every 5 seconds
+                    elapsed_time = current_time - start_time
+                    eta = (elapsed_time / completed) * (total_combinations - completed)
+                    progress = int((completed / total_combinations) * 50)
+                    print(f"Progress: [{'#' * progress}{' ' * (50 - progress)}] {completed}/{total_combinations} ETA: {eta:.2f}s", end='\r')
+                    last_update_time = current_time
+        if buffer:  # Write remaining lines in the buffer
+            file.writelines(buffer)
+        print()  # Newline after progress bar
 
 def print_banner():
     banner = '''
@@ -32,7 +63,7 @@ def print_banner():
                                                                                         
 '''
 
-    print("PWGen V1.2")
+    print("PWGen V1.3")
     print("Made By")
     print(banner)
 
@@ -84,11 +115,11 @@ def main():
 
     num_characters = int(input("Enter the maximum number of characters per combination: "))
 
-    print("The wordlist is being generated! You can check the progress by opening the combinations.txt file. Thanks for using my tool!")
+    print("The wordlist is being generated! You can check the progress by opening the wordlist.txt file. Thanks for using my tool!")
 
     generate_combinations(num_characters, use_letters, use_numbers, use_special_chars)
 
-    print("The combinations have been saved in the file combinations.txt.")
+    print("The combinations have been saved in the file wordlist.txt.")
 
 if __name__ == "__main__":
     main()
